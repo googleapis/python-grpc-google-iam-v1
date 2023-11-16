@@ -285,7 +285,7 @@ def docfx(session):
     )
 
 
-@nox.session(python="3.9")
+@nox.session(python="3.8")
 def lint(session):
     """Run linters.
 
