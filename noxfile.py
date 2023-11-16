@@ -15,6 +15,7 @@
 import os
 import pathlib
 from pathlib import Path
+import shutil
 
 import nox
 
@@ -215,4 +216,30 @@ def generate_protos(session):
     protos = [str(p) for p in (Path(".").glob("google/**/*.proto"))]
     session.run(
         "python", "-m", "grpc_tools.protoc", "--proto_path=.", "--python_out=.", *protos
+    )
+
+
+@nox.session(python="3.10")
+def docs(session):
+    """Build the docs for this library."""
+
+    session.install("-e", ".")
+    session.install(
+        "sphinx==4.5.0",
+        "alabaster",
+        "recommonmark",
+    )
+
+    shutil.rmtree(os.path.join("docs", "_build"), ignore_errors=True)
+    session.run(
+        "sphinx-build",
+        "-W",  # warnings as errors
+        "-T",  # show full traceback on exception
+        "-N",  # no colors
+        "-b",
+        "html",
+        "-d",
+        os.path.join("docs", "_build", "doctrees", ""),
+        os.path.join("docs", ""),
+        os.path.join("docs", "_build", "html", ""),
     )
