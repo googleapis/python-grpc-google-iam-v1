@@ -20,6 +20,7 @@ import shutil
 import nox
 
 BLACK_VERSION = "black==22.3.0"
+LINT_PATHS = ["docs", "google", "noxfile.py", "setup.py"]
 
 # NOTE: Pin the version of grpcio-tools to 1.48.2 for compatibility with
 # Protobuf 3.19.5. Please ensure that the minimum required version of
@@ -28,6 +29,7 @@ BLACK_VERSION = "black==22.3.0"
 GRPCIO_TOOLS_VERSION = "grpcio-tools==1.48.2"
 
 CURRENT_DIRECTORY = pathlib.Path(__file__).parent.absolute()
+
 
 @nox.session(python="3.8")
 def blacken(session):
@@ -161,6 +163,7 @@ def test(session, library):
             session.install("psutil")
         system(session)
 
+
 @nox.session(python=["3.6", "3.7", "3.8", "3.9", "3.10"])
 def tests_local(session):
     """Run tests in this local repo."""
@@ -244,6 +247,7 @@ def docs(session):
         os.path.join("docs", "_build", "html", ""),
     )
 
+
 @nox.session(python="3.10")
 def docfx(session):
     """Build the docfx yaml files for this library."""
@@ -279,3 +283,19 @@ def docfx(session):
         os.path.join("docs", ""),
         os.path.join("docs", "_build", "html", ""),
     )
+
+
+@nox.session(python="3.9")
+def lint(session):
+    """Run linters.
+
+    Returns a failure if the linters find linting errors or sufficiently
+    serious code quality issues.
+    """
+    session.install("flake8", BLACK_VERSION)
+    session.run(
+        "black",
+        "--check",
+        *LINT_PATHS,
+    )
+    session.run("flake8", "google", "tests")
