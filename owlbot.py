@@ -44,6 +44,25 @@ s.copy("googleapis/google/api/*.proto", "google/api")
 
 templated_files = gcp.CommonTemplates().py_library()
 s.move(templated_files / ".kokoro")
+s.replace(
+    ".kokoro/docs/common.cfg",
+    """# Push non-cloud library docs to `docs-staging-v2-staging` instead of the
+    # Cloud RAD bucket `docs-staging-v2`
+    value: \"docs-staging-v2-staging\"""",
+    """# Allow publishing docs for this library.
+    value: \"docs-staging-v2\"""",
+)
+
+# Export variable to override api endpoint
+export API_ENDPOINT_OVERRIDE
+
+# Export variable to override api endpoint version
+export API_VERSION_OVERRIDE
+
+# Export dual region locations
+export DUAL_REGION_LOC_1
+export DUAL_REGION_LOC_2""")
+
 s.move(templated_files / "docs", excludes=["multiprocessing.rst"])
 s.move(templated_files / "LICENSE")
 s.move(templated_files / "CONTRIBUTING.rst")
