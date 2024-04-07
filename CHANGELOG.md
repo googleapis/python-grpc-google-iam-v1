@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/googleapis/python-grpc-google-iam-v1/compare/v0.13.0...v0.13.1) (2024-04-07)
+
+
+### Documentation
+
+* Fix docs session ([#88](https://github.com/googleapis/python-grpc-google-iam-v1/issues/88)) ([8556f3f](https://github.com/googleapis/python-grpc-google-iam-v1/commit/8556f3f19ce5455ac8cee2c6ad8706ec78ffc352))
+
 ## [0.13.0](https://github.com/googleapis/python-grpc-google-iam-v1/compare/v0.12.7...v0.13.0) (2023-11-29)
 
 
