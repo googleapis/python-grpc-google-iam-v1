@@ -53,31 +53,29 @@ def lint_setup_py(session):
 
 def unit(session, repository, package, prerelease, protobuf_implementation):
     """Run the unit test suite."""
+    downstream_dir = repository
+    if package:
+        downstream_dir = f"{repository}/packages/{package}"
+
     # Install all test dependencies, then install this package in-place.
     session.install("asyncmock", "pytest-asyncio")
 
     # Pin mock due to https://github.com/googleapis/python-pubsub/issues/840
     session.install("mock==5.0.0", "pytest", "pytest-cov")
 
-    if package:
-        downstream_parent_dir = f"{CURRENT_DIRECTORY}/{repository}/packages/{package}"
-    else:
-        downstream_parent_dir = f"{CURRENT_DIRECTORY}/{repository}"
-
-    install_command = ["-e", downstream_parent_dir]
+    install_command = ["-e", f"{CURRENT_DIRECTORY}/{downstream_dir}"]
 
     if prerelease:
         install_prerelease_dependencies(
             session,
-            f"{downstream_parent_dir}/testing/constraints-{UNIT_TEST_PYTHON_VERSIONS[0]}.txt",
+            f"{CURRENT_DIRECTORY}/{downstream_dir}/testing/constraints-{UNIT_TEST_PYTHON_VERSIONS[0]}.txt",
         )
-        # Use the `--no-deps` options to install googleapis-api-common-protos without dependencies
-        # since we are using pre-release versions of dependencies
+        # Use the `--no-deps` options to allow pre-release versions of dependencies to be installed
         install_command.extend(["--no-deps"])
     else:
         # Install the pinned dependencies in constraints file
         install_command.extend(
-            ["-c", f"{downstream_parent_dir}/testing/constraints-{session.python}.txt"]
+            ["-c", f"{CURRENT_DIRECTORY}/{downstream_dir}/testing/constraints-{session.python}.txt"]
         )
 
     # These *must* be the last 3 install commands to get the packages from source.
@@ -88,6 +86,7 @@ def unit(session, repository, package, prerelease, protobuf_implementation):
     if protobuf_implementation == "cpp":
         session.install("protobuf<4")
 
+    # Install this library from source
     session.install(".", "--no-deps")
 
     # Print out package versions of dependencies
@@ -101,22 +100,24 @@ def unit(session, repository, package, prerelease, protobuf_implementation):
         "python", "-c", "import google.api_core; print(google.api_core.__version__)"
     )
 
-    # Run py.test against the unit tests.
-    session.run(
-        "py.test",
-        "--quiet",
-        "--cov=google/cloud",
-        "--cov=tests/unit",
-        "--cov-append",
-        "--cov-config=.coveragerc",
-        "--cov-report=",
-        "--cov-fail-under=0",
-        os.path.join("tests", "unit"),
-        *session.posargs,
-        env={
-            "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": protobuf_implementation,
-        },
-    )
+    # Run py.test against the unit tests in the downstream repository
+    with session.chdir(downstream_dir):
+        # Run py.test against the unit tests.
+        session.run(
+            "py.test",
+            "--quiet",
+            "--cov=google/cloud",
+            "--cov=tests/unit",
+            "--cov-append",
+            "--cov-config=.coveragerc",
+            "--cov-report=",
+            "--cov-fail-under=0",
+            os.path.join("tests", "unit"),
+            *session.posargs,
+            env={
+                "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": protobuf_implementation,
+            },
+        )
 
 
 def install_prerelease_dependencies(session, constraints_path):
@@ -199,10 +200,6 @@ def unit_remote(session, library, prerelease, protobuf_implementation):
             f"https://github.com/googleapis/{repository}",
             external=True,
         )
-
-    session.cd(repository)
-    if package:
-        session.cd(f"packages/{package}")
 
     unit(
         session=session,
