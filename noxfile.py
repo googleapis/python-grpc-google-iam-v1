@@ -20,9 +20,6 @@ import shutil
 
 import nox
 
-import google.protobuf
-
-PROTOBUF_MAJOR_VERSION = int(google.protobuf.__version__[0:1])
 
 BLACK_VERSION = "black==22.3.0"
 LINT_PATHS = ["docs", "google", "noxfile.py", "setup.py"]
@@ -207,7 +204,13 @@ def unit_remote(session, library, prerelease, protobuf_implementation):
     if package:
         session.cd(f"packages/{package}")
 
-    unit(session=session, repository=repository, package=package, prerelease=prerelease, protobuf_implementation=protobuf_implementation)
+    unit(
+        session=session,
+        repository=repository,
+        package=package,
+        prerelease=prerelease,
+        protobuf_implementation=protobuf_implementation,
+    )
 
 
 @nox.session(python=UNIT_TEST_PYTHON_VERSIONS)
