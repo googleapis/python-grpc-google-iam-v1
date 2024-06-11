@@ -75,7 +75,10 @@ def unit(session, repository, package, prerelease, protobuf_implementation):
     else:
         # Install the pinned dependencies in constraints file
         install_command.extend(
-            ["-c", f"{CURRENT_DIRECTORY}/{downstream_dir}/testing/constraints-{session.python}.txt"]
+            [
+                "-c",
+                f"{CURRENT_DIRECTORY}/{downstream_dir}/testing/constraints-{session.python}.txt",
+            ]
         )
 
     # These *must* be the last 3 install commands to get the packages from source.
