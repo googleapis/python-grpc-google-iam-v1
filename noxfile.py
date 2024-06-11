@@ -204,7 +204,13 @@ def unit_remote(session, library, prerelease, protobuf_implementation):
     if package:
         session.cd(f"packages/{package}")
 
-    unit(session=session, repository=repository, package=package, prerelease=prerelease, protobuf_implementation=protobuf_implementation)
+    unit(
+        session=session,
+        repository=repository,
+        package=package,
+        prerelease=prerelease,
+        protobuf_implementation=protobuf_implementation,
+    )
 
 
 @nox.session(python=UNIT_TEST_PYTHON_VERSIONS)
