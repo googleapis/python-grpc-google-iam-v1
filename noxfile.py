@@ -16,10 +16,17 @@ import os
 import pathlib
 from pathlib import Path
 import re
+import shutil
 
 import nox
 
+import google.protobuf
+
+PROTOBUF_MAJOR_VERSION = int(google.protobuf.__version__[0:1])
+
 BLACK_VERSION = "black==22.3.0"
+LINT_PATHS = ["docs", "google", "noxfile.py", "setup.py"]
+
 
 # `grpcio-tools` 1.59.0 or newer is required for protobuf 5.x compatibility.
 GRPCIO_TOOLS_VERSION = "grpcio-tools==1.59.0"
@@ -76,8 +83,14 @@ def unit(session, repository, package, prerelease, protobuf_implementation):
             ["-c", f"{downstream_parent_dir}/testing/constraints-{session.python}.txt"]
         )
 
-    # These *must* be the last 2 install commands to get the packages from source.
+    # These *must* be the last 3 install commands to get the packages from source.
     session.install(*install_command)
+
+    # Remove the 'cpp' implementation once support for Protobuf 3.x is dropped.
+    # The 'cpp' implementation requires Protobuf<4.
+    if protobuf_implementation == "cpp":
+        session.install("protobuf<4")
+
     session.install(".", "--no-deps")
 
     # Print out package versions of dependencies
@@ -143,45 +156,6 @@ def install_prerelease_dependencies(session, constraints_path):
         session.install(*other_deps)
 
 
-def system(session, protobuf_implementation):
-    """Run the system test suite."""
-    system_test_path = os.path.join("tests", "system.py")
-    system_test_folder_path = os.path.join("tests", "system")
-    # Sanity check: Only run tests if the environment variable is set.
-    if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", ""):
-        session.skip("Credentials must be set via environment variable")
-
-    system_test_exists = os.path.exists(system_test_path)
-    system_test_folder_exists = os.path.exists(system_test_folder_path)
-    # Sanity check: only run tests if found.
-    if not system_test_exists and not system_test_folder_exists:
-        session.skip("System tests were not found")
-
-    # Run py.test against the system tests.
-    if system_test_exists:
-        session.run(
-            "py.test",
-            "--verbose",
-            system_test_path,
-            *session.posargs,
-            env={
-                "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": protobuf_implementation,
-            },
-    )
-
-    # Run py.test against the system tests.
-    if system_test_folder_exists:
-        session.run(
-            "py.test",
-            "--verbose",
-            system_test_folder_path,
-            *session.posargs,
-            env={
-                "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": protobuf_implementation,
-            },
-        )
-
-
 @nox.session(python=UNIT_TEST_PYTHON_VERSIONS)
 @nox.parametrize(
     "library, prerelease,protobuf_implementation",
@@ -201,7 +175,7 @@ def system(session, protobuf_implementation):
     ],
     ids=["pubsub", "speech"],
 )
-def test(session, library, prerelease, protobuf_implementation):
+def unit_remote(session, library, prerelease, protobuf_implementation):
     """Run tests from a downstream libraries.
 
     To verify that any changes we make here will not break downstream libraries, clone
@@ -213,8 +187,6 @@ def test(session, library, prerelease, protobuf_implementation):
     * Pub/Sub: GAPIC with handwritten layer.
     * Speech: Full GAPIC, has long running operations.
     """
-    if prerelease and session.python != UNIT_TEST_PYTHON_VERSIONS[-1]:
-        session.skip("Prerelease test is only run using the latest python runtime")
 
     if protobuf_implementation == "cpp" and session.python in ("3.11", "3.12"):
         session.skip("cpp implementation is not supported in python 3.11+")
@@ -237,18 +209,10 @@ def test(session, library, prerelease, protobuf_implementation):
 
     unit(session=session, repository=repository, package=package, prerelease=prerelease, protobuf_implementation=protobuf_implementation)
 
-    # system tests are run on 3.7 only
-    if session.python == "3.7":
-        if repository == "python-pubsub":
-            session.install("google-cloud-testutils")
-            session.install("psutil")
-            session.install("flaky")
-        system(session=session, protobuf_implementation=protobuf_implementation)
-
 
 @nox.session(python=UNIT_TEST_PYTHON_VERSIONS)
 @nox.parametrize("protobuf_implementation", ["python", "upb", "cpp"])
-def tests_local(session, protobuf_implementation):
+def unit_local(session, protobuf_implementation):
     """Run tests in this local repo."""
     # Install all test dependencies, then install this package in-place.
 
@@ -274,6 +238,11 @@ def tests_local(session, protobuf_implementation):
     )
 
     session.install("-e", ".", "-c", constraints_path)
+
+    # Remove the 'cpp' implementation once support for Protobuf 3.x is dropped.
+    # The 'cpp' implementation requires Protobuf<4.
+    if protobuf_implementation == "cpp":
+        session.install("protobuf<4")
 
     # Run py.test against the unit tests.
     session.run(
