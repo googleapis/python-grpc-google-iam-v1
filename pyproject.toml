@@ -1,0 +1,43 @@
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "grpc-google-iam-v1"
+version = "0.13.1"
+authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
+license = { text = "Apache 2.0" }
+requires-python = ">=3.7"
+description = "IAM API client library"
+readme = "README.rst"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Topic :: Internet",
+]
+dependencies = [
+  "grpcio>=1.44.0, <2.0.0dev",
+  "googleapis-common-protos[grpc]>=1.56.0, <2.0.0dev",
+  "protobuf>=3.20.2,<6.0.0dev,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5",
+]
+
+[project.urls]
+Repository = "https://github.com/googleapis/python-grpc-google-iam-v1"
+
+[project.optional-dependencies]
+
+[tool.setuptools]
+
+[tool.setuptools.packages.find]
+include = ["google*"]
