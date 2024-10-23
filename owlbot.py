@@ -46,9 +46,9 @@ templated_files = gcp.CommonTemplates().py_library()
 s.move(templated_files / ".kokoro")
 s.replace(
     ".kokoro/docs/common.cfg",
-    """# Push non-cloud library docs to `docs-staging-v2-staging` instead of the
+    """# Push non-cloud library docs to `docs-staging-v2-dev` instead of the
     # Cloud RAD bucket `docs-staging-v2`
-    value: \"docs-staging-v2-staging\"""",
+    value: \"docs-staging-v2-dev\"""",
     """# Allow publishing docs for this library.
     value: \"docs-staging-v2\"""",
 )
