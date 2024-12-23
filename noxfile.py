@@ -29,7 +29,7 @@ LINT_PATHS = ["docs", "google", "noxfile.py", "setup.py"]
 GRPCIO_TOOLS_VERSION = "grpcio-tools==1.59.0"
 
 CURRENT_DIRECTORY = pathlib.Path(__file__).parent.absolute()
-UNIT_TEST_PYTHON_VERSIONS = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+UNIT_TEST_PYTHON_VERSIONS = ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 
 @nox.session(python="3.8")
@@ -189,7 +189,7 @@ def unit_remote(session, library, prerelease, protobuf_implementation):
     * Speech: Full GAPIC, has long running operations.
     """
 
-    if protobuf_implementation == "cpp" and session.python in ("3.11", "3.12"):
+    if protobuf_implementation == "cpp" and session.python in ("3.11", "3.12", "3.13"):
         session.skip("cpp implementation is not supported in python 3.11+")
 
     repository, package = library
@@ -224,7 +224,7 @@ def unit_local(session, protobuf_implementation):
     # The 'cpp' implementation requires Protobuf == 3.x however version 3.x
     # does not support Python 3.11 and newer. The 'cpp' implementation
     # must be excluded from the test matrix for these runtimes.
-    if protobuf_implementation == "cpp" and session.python in ("3.11", "3.12"):
+    if protobuf_implementation == "cpp" and session.python in ("3.11", "3.12", "3.13"):
         session.skip("cpp implementation is not supported in python 3.11+")
 
     constraints_path = str(
