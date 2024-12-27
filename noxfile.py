@@ -109,6 +109,7 @@ def unit(
         session.run(
             "py.test",
             "--quiet",
+            f"--junitxml=unit_{session.python}_sponge_log.xml",
             "--cov=google/cloud",
             "--cov=tests/unit",
             "--cov-append",
