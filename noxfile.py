@@ -70,7 +70,7 @@ def unit(
         session.install("-e", f"{working_dir}/{downstream_dir}")
         install_prerelease_dependencies(
             session,
-            f"{CURRENT_DIRECTORY}/{downstream_dir}/testing/constraints-{UNIT_TEST_PYTHON_VERSIONS[0]}.txt",
+            f"{working_dir}/{downstream_dir}/testing/constraints-{UNIT_TEST_PYTHON_VERSIONS[0]}.txt",
         )
     else:
         install_command = ["-e", f"{working_dir}/{downstream_dir}"]
@@ -104,7 +104,7 @@ def unit(
     )
 
     # Run py.test against the unit tests in the downstream repository
-    with session.chdir(downstream_dir):
+    with session.chdir(f"{working_dir}/{downstream_dir}"):
         # Run py.test against the unit tests.
         session.run(
             "py.test",
