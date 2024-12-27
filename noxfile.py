@@ -52,7 +52,9 @@ def lint_setup_py(session):
     session.run("python", "setup.py", "check", "--strict")
 
 
-def unit(session, repository, package, prerelease, protobuf_implementation, working_dir):
+def unit(
+    session, repository, package, prerelease, protobuf_implementation, working_dir
+):
     """Run the unit test suite."""
     downstream_dir = repository
     if package:
