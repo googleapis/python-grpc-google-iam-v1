@@ -78,7 +78,7 @@ def unit(
         install_command.extend(
             [
                 "-c",
-                f"{CURRENT_DIRECTORY}/{downstream_dir}/testing/constraints-{session.python}.txt",
+                f"{working_dir}/{downstream_dir}/testing/constraints-{session.python}.txt",
             ]
         )
         session.install(*install_command)
