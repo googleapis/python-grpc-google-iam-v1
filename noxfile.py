@@ -262,7 +262,6 @@ def unit_local(session, protobuf_implementation):
     )
 
 
-@nox.session(python="3.9")
 def docs(session):
     """Build the docs for this library."""
 
